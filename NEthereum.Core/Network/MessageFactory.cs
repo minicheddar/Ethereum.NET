@@ -7,7 +7,7 @@ namespace NEthereum.Network
         private static readonly IEnumerable<Capability> capabilities = new[]
             {
                 new Capability(Capability.ETH),
-                new Capability(Capability.SHH),
+                new Capability(Capability.SHH)
             };
 
         /// <summary>
