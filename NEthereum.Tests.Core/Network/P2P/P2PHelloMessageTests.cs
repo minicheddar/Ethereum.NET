@@ -20,9 +20,5 @@ namespace NEthereum.Tests.Network
             encoded[0].Should().Be(Convert.ToByte(P2PMessageCode.Hello));
         }
 
-        [TestMethod]
-        public void test()
-        {
-        }
     }
 }
