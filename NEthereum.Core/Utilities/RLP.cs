@@ -16,6 +16,7 @@ namespace NEthereum.Utilities
     public static class RLP
     {
         private static readonly BigEndianBitConverter converter = new BigEndianBitConverter();
+        private static readonly byte[] syncToken = new byte[] { 34, 64, 8, 145 };
 
         private const int SizeThreshold = 55;
         private const int ShortItemOffset = 128;
@@ -87,6 +88,24 @@ namespace NEthereum.Utilities
             return items.SelectMany(x => x).ToArray();
         }
 
+        public static byte[] Encode(IList<byte[]> data)
+        {
+            var count = data.Sum(item => item.Length);
+
+            if (count <= SizeThreshold)
+            {
+                data.Insert(0, new[] { Convert.ToByte(ShortCollectionOffset + count) });
+            }
+
+            if (count > SizeThreshold)
+            {
+                data.Insert(0, new[] { Convert.ToByte(LargeCollectionOffset + 1) }); // TODO: 247 + length of length of bytes
+                data.Insert(1, new[] { Convert.ToByte(count) });
+            }
+
+            return data.SelectMany(x => x).ToArray();
+        }
+
         public static IEnumerable<string> Decode(byte[] data)
         {
             var message = new List<string>();
@@ -146,6 +165,23 @@ namespace NEthereum.Utilities
             }
 
             return message;
+        }
+
+        public static byte[] EncodePacket(byte[] payload)
+        {
+            return new List<byte[]>
+                {
+                    syncToken, 
+                    converter.GetBytes(payload.Length), 
+                    payload
+                }
+                .SelectMany(x => x)
+                .ToArray();
+        }
+
+        public static IEnumerable<string> DecodePacket(byte[] data)
+        {
+            return Decode(data.Skip(4).SkipWhile(x => x == 0).ToArray());
         }
     }
 }

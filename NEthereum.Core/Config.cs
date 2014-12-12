@@ -1,14 +1,16 @@
-﻿namespace NEthereum
+﻿using System.Collections.Generic;
+
+namespace NEthereum
 {
     public static class Config
     {
-        public static string[] PeerDiscoverySeeds = new[]
+        public static IEnumerable<string> PeerDiscoverySeeds = new[]
             {
                 "poc-7.ethdev.com:30303",
                 "185.43.109.23:30303"
             };
 
-        public static int Port = 30303;
+        public static int DefaultPort = 30303;
         public static bool PeerDiscoveryEnabled = true;
         public static bool TeardownDbOnLoad = true;
     }

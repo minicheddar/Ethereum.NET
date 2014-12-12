@@ -1,9 +1,6 @@
-﻿using System;
-using System.Net;
-using System.Net.Sockets;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 
-namespace NEthereum
+namespace System.Net.Sockets
 {
     /// <summary>
     /// Extensions for <see cref="System.Net.Sockets"/>

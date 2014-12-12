@@ -6,7 +6,7 @@
     <ProjectGuid>{A8E6437B-6ED6-4963-AB76-2D49B516936B}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>NEthereum.Tests.Core</RootNamespace>
+    <RootNamespace>NEthereum.Tests</RootNamespace>
     <AssemblyName>NEthereum.Tests.Core</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
@@ -59,7 +59,8 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
-    <Compile Include="RLPTests.cs" />
+    <Compile Include="Network\P2P\P2PHelloMessageTests.cs" />
+    <Compile Include="Utilities\RLPTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
