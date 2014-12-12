@@ -19,6 +19,5 @@ namespace NEthereum.Tests.Network
             encoded.Length.Should().Be(34);
             encoded[0].Should().Be(Convert.ToByte(P2PMessageCode.Hello));
         }
-
     }
 }
