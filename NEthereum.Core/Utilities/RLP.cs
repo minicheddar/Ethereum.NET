@@ -18,11 +18,14 @@ namespace NEthereum.Utilities
         private static readonly BigEndianBitConverter converter = new BigEndianBitConverter();
         private static readonly byte[] syncToken = new byte[] { 34, 64, 8, 145 };
 
+        private const int SyncTokenLength = 4;
+        private const int MessageStartIndex = 8;
         private const int SizeThreshold = 55;
         private const int ShortItemOffset = 128;
         private const int LargeItemOffset = 183;
         private const int ShortCollectionOffset = 192;
         private const int LargeCollectionOffset = 247;
+        private const int MaxItemLength = 255;
 
         public static byte[] Encode(int data)
         {
@@ -106,65 +109,81 @@ namespace NEthereum.Utilities
             return data.SelectMany(x => x).ToArray();
         }
 
-        public static IEnumerable<string> Decode(byte[] data)
+        public static IEnumerable<string> Decode(byte[] data, int position = 0, int length = 0, IList<string> decoded = null)
         {
-            var message = new List<string>();
-            var index = 1;
-            var lengthByte = Convert.ToInt16(data[0]);
+            if (decoded == null)
+                decoded = new List<string>();
 
-            // single byte
-            if (lengthByte < ShortItemOffset)
+            if (length == 0)
+                length = data.Length;
+
+            while (position < length)
             {
-                message.Add(lengthByte.ToString(CultureInfo.InvariantCulture));
-            }
+                var lengthByte = Convert.ToInt16(data[position]);
+                position++;
 
-            // item under 55 bytes
-            if (lengthByte > ShortItemOffset && lengthByte <= LargeItemOffset)
-            {
-                var itemLength = lengthByte - ShortItemOffset;
-                message.Add(Encoding.ASCII.GetString(data, index, itemLength));
-            }
-
-            // item over 55 bytes
-            if (lengthByte > LargeItemOffset && lengthByte <= ShortCollectionOffset)
-            {
-                var itemLength = Convert.ToInt16(data[index]);
-                index++;
-                message.Add(Encoding.ASCII.GetString(data, index, itemLength));
-            }
-
-            // collection under 55 bytes
-            if (lengthByte > ShortCollectionOffset && lengthByte <= LargeCollectionOffset)
-            {
-                var totalItemsLength = lengthByte - ShortCollectionOffset;
-
-                while (index < totalItemsLength)
+                // single byte
+                if (lengthByte < ShortItemOffset)
                 {
-                    lengthByte = Convert.ToInt16(data[index]);
-                    var itemLength = lengthByte - ShortItemOffset; // TODO: check item length +/- 55 bytes
-                    index++;
-                    message.Add(Encoding.ASCII.GetString(data, index, itemLength));
-                    index += itemLength;
+                    decoded.Add(lengthByte.ToString(CultureInfo.InvariantCulture));
+                    position += lengthByte;
+                }
+
+                // string under 55 bytes
+                if (lengthByte > ShortItemOffset && lengthByte <= LargeItemOffset)
+                {
+                    var itemLength = CalculateItemLength(lengthByte, ShortItemOffset);
+                    decoded.Add(Encoding.ASCII.GetString(data, position, itemLength));
+                    position += itemLength;
+                }
+
+                // string over 55 bytes
+                if (lengthByte > LargeItemOffset && lengthByte <= ShortCollectionOffset)
+                {
+                    var itemLength = Convert.ToInt16(data[position]);
+                    position++;
+                    decoded.Add(Encoding.ASCII.GetString(data, position, itemLength));
+                    position += itemLength;
+                }
+
+                // collection under 55 bytes
+                if (lengthByte > ShortCollectionOffset && lengthByte <= LargeCollectionOffset)
+                {
+                    var totalItemsLength = CalculateItemLength(lengthByte, ShortCollectionOffset);
+
+                    while (position < totalItemsLength)
+                    {
+                        var itemLength = CalculateItemLength(Convert.ToInt16(data[position]), ShortItemOffset); // TODO: check item length +/- 55 bytes
+                        position++;
+                        decoded.Add(Encoding.ASCII.GetString(data, position, itemLength));
+                        position += itemLength;
+                    }
+                }
+
+                // collection over 55 bytes
+                if (lengthByte > LargeCollectionOffset)
+                {
+                    var itemCount = 0;
+                    var totalItems = CalculateItemLength(lengthByte, LargeCollectionOffset);
+                    var totalItemsLength = Convert.ToInt16(data[position]);
+                    position++;
+
+                    while (itemCount < totalItems)
+                    {
+                        while (position < totalItemsLength)
+                        {
+                            var itemLength = CalculateItemLength(Convert.ToInt16(data[position]), ShortItemOffset);  // TODO: check item length +/- 55 bytes
+                            position++;
+                            decoded.Add(Encoding.ASCII.GetString(data, position, itemLength));
+                            position += itemLength;
+                        }
+
+                        itemCount++;
+                    }
                 }
             }
 
-            // collection over 55 bytes
-            if (lengthByte > LargeCollectionOffset)
-            {
-                var totalItemsLength = Convert.ToInt16(data[index]);
-                index++;
-
-                while (index < totalItemsLength)
-                {
-                    lengthByte = Convert.ToInt16(data[index]);
-                    var itemLength = lengthByte - ShortItemOffset;  // TODO: check item length +/- 55 bytes
-                    index++;
-                    message.Add(Encoding.ASCII.GetString(data, index, itemLength));
-                    index += itemLength;
-                }
-            }
-
-            return message;
+            return decoded;
         }
 
         public static byte[] EncodePacket(byte[] payload)
@@ -181,7 +200,75 @@ namespace NEthereum.Utilities
 
         public static IEnumerable<string> DecodePacket(byte[] data)
         {
-            return Decode(data.Skip(4).SkipWhile(x => x == 0).ToArray());
+            if (!StartsWithSyncToken(data))
+            {
+                return Decode(data);
+            }
+
+            var payloadLength = Convert.ToInt16(data.Skip(SyncTokenLength).SkipWhile(x => x == 0).FirstOrDefault());
+            //var decodedMessage = new List<string> {data[9].ToString()};
+
+            return Decode(data, MessageStartIndex, payloadLength);
         }
+        
+        private static bool StartsWithSyncToken(byte[] data)
+        {
+            return data.Length >= 4 && 
+                   data[0] == syncToken[0] &&
+                   data[1] == syncToken[1] &&
+                   data[2] == syncToken[2] &&
+                   data[3] == syncToken[3];
+        }
+
+        private static int CalculateItemLength(int length, int offset)
+        {
+            var max = Math.Max(length, offset);
+            var min = Math.Min(length, offset);
+
+            return max - min;
+        }
+
+        //private static IList<byte> EncodeLength(int itemLength)
+        //{
+        //    var lengths = new List<byte>();
+
+        //    // single byte
+        //    if (itemLength < ShortItemOffset)
+        //    {
+        //        lengths.Add(Convert.ToByte(itemLength));
+        //        return lengths;
+        //    }
+
+        //    // string under 55 bytes
+        //    if (itemLength > ShortItemOffset && itemLength <= LargeItemOffset)
+        //    {
+        //        lengths.Add(Convert.ToByte(ShortItemOffset + itemLength));
+        //        return lengths;
+        //    }
+
+        //    // string over 55 bytes
+        //    if (itemLength > LargeItemOffset && itemLength <= ShortCollectionOffset)
+        //    {
+        //        lengths.Add(Convert.ToByte(LargeItemOffset + 1)); // TODO: 183 + length of length of bytes
+        //        lengths.Add(Convert.ToByte(itemLength));
+        //        return lengths;
+        //    }
+
+        //    // collection under 55 bytes
+        //    if (itemLength > ShortCollectionOffset && itemLength <= LargeCollectionOffset)
+        //    {
+        //        lengths.Add(Convert.ToByte(ShortCollectionOffset + itemLength));
+        //    }
+
+        //    // collection over 55 bytes
+        //    if (itemLength > LargeCollectionOffset && itemLength <= MaxItemLength)
+        //    {
+        //        lengths.Add(Convert.ToByte(ShortCollectionOffset + itemLength)); // TODO: 247 + length of length of bytes
+        //        lengths.Add(Convert.ToByte(itemLength));
+        //        return lengths;
+        //    }
+
+        //    throw new ArgumentOutOfRangeException("itemLength", "length is too long");
+        //}
     }
 }
