@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace NEthereum.Utilities
 {
@@ -39,9 +40,9 @@ namespace NEthereum.Utilities
             return Encode(data.ToString(CultureInfo.InvariantCulture));
         }
 
-        public static byte[] Encode(string data)
+        public static byte[] Encode(string input)
         {
-            var bytes = Encoding.ASCII.GetBytes(data);
+            var bytes = Encoding.ASCII.GetBytes(input);
             var length = bytes.Length;
 
             if (length <= SizeThreshold)
@@ -53,133 +54,128 @@ namespace NEthereum.Utilities
                 return newBytes;
             }
 
-            if (length > SizeThreshold)
+            if (length > SizeThreshold && length <= MaxItemLength)
             {
                 var newBytes = new byte[length + 2];
-                newBytes[0] = Convert.ToByte(LargeItemOffset + 1);  // TODO: 183 + length of length of bytes
+                newBytes[0] = Convert.ToByte(LargeItemOffset + 1);  // TODO: 183 + length of length of bytes (how many bytes it needed to fit into)
                 newBytes[1] = Convert.ToByte(length);
                 Array.Copy(bytes, 0, newBytes, 2, length);
 
                 return newBytes;
             }
 
-            throw new ArgumentOutOfRangeException("data", "data is too long");
+            throw new ArgumentOutOfRangeException("input", "input is too long");
         }
 
-        public static byte[] Encode(IEnumerable<string> data)
+        public static byte[] Encode(IEnumerable<string> input)
         {
             var items = new List<byte[]>();
-            var count = 0;
+            var totalLength = 0;
 
-            foreach (var bytes in data.Select(Encode))
+            foreach (var bytes in input.Select(Encode))
             {
-                count += bytes.Length;
+                totalLength += bytes.Length;
                 items.Add(bytes);
             }
 
-            if (count <= SizeThreshold)
+            if (totalLength <= SizeThreshold)
             {
-                items.Insert(0, new[] { Convert.ToByte(ShortCollectionOffset + count) });
+                items.Insert(0, new[] { Convert.ToByte(ShortCollectionOffset + totalLength) });
             }
 
-            if (count > SizeThreshold)
+            if (totalLength > SizeThreshold && totalLength <= MaxItemLength)
             {
-                items.Insert(0, new[] { Convert.ToByte(LargeCollectionOffset + 1) }); // TODO: 247 + length of length of bytes
-                items.Insert(1, new[] { Convert.ToByte(count) });
+                items.Insert(0, new[] { Convert.ToByte(LargeCollectionOffset + 1) }); // TODO: 247 + length of length of bytes (how many bytes it needed to fit into)
+                items.Insert(1, new[] { Convert.ToByte(totalLength) });
+            }
+
+            if (totalLength > MaxItemLength)
+            {
+                throw new ArgumentOutOfRangeException("input", "input is too long");
             }
 
             return items.SelectMany(x => x).ToArray();
         }
 
-        public static byte[] Encode(IList<byte[]> data)
-        {
-            var count = data.Sum(item => item.Length);
-
-            if (count <= SizeThreshold)
-            {
-                data.Insert(0, new[] { Convert.ToByte(ShortCollectionOffset + count) });
-            }
-
-            if (count > SizeThreshold)
-            {
-                data.Insert(0, new[] { Convert.ToByte(LargeCollectionOffset + 1) }); // TODO: 247 + length of length of bytes
-                data.Insert(1, new[] { Convert.ToByte(count) });
-            }
-
-            return data.SelectMany(x => x).ToArray();
-        }
-
-        public static IEnumerable<string> Decode(byte[] data, int position = 0, int length = 0, IList<string> decoded = null)
+        public static IEnumerable<string> Decode(byte[] input, int position = 0, int length = 0, IList<string> decoded = null)
         {
             if (decoded == null)
                 decoded = new List<string>();
 
             if (length == 0)
-                length = data.Length;
+                length = input.Length;
 
             while (position < length)
             {
-                var lengthByte = Convert.ToInt16(data[position]);
-                position++;
+                var firstByte = Convert.ToInt16(input[position]);
 
                 // single byte
-                if (lengthByte < ShortItemOffset)
+                if (firstByte < ShortItemOffset)
                 {
-                    decoded.Add(lengthByte.ToString(CultureInfo.InvariantCulture));
-                    position += lengthByte;
+                    decoded.Add(firstByte.ToString(CultureInfo.InvariantCulture));
+                    position++;
+                    continue;
                 }
 
                 // string under 55 bytes
-                if (lengthByte > ShortItemOffset && lengthByte <= LargeItemOffset)
+                if (firstByte <= LargeItemOffset)
                 {
-                    var itemLength = CalculateItemLength(lengthByte, ShortItemOffset);
-                    decoded.Add(Encoding.ASCII.GetString(data, position, itemLength));
+                    var itemLength = CalculateItemLength(firstByte, 0x7f);
+                    decoded.Add(Encoding.ASCII.GetString(input, position + 1, itemLength - 1));
                     position += itemLength;
+                    continue; 
                 }
 
                 // string over 55 bytes
-                if (lengthByte > LargeItemOffset && lengthByte <= ShortCollectionOffset)
+                if (firstByte < ShortCollectionOffset)
                 {
-                    var itemLength = Convert.ToInt16(data[position]);
                     position++;
-                    decoded.Add(Encoding.ASCII.GetString(data, position, itemLength));
+                    var itemLength = Convert.ToInt16(input[position]);
+                    position++;
+                    decoded.Add(Encoding.ASCII.GetString(input, position, itemLength));
                     position += itemLength;
+                    continue;
                 }
 
                 // collection under 55 bytes
-                if (lengthByte > ShortCollectionOffset && lengthByte <= LargeCollectionOffset)
+                if (firstByte <= LargeCollectionOffset)
                 {
-                    var totalItemsLength = CalculateItemLength(lengthByte, ShortCollectionOffset);
+                    var totalItemsLength = CalculateItemLength(firstByte, ShortCollectionOffset);
+                    var offset = totalItemsLength > SizeThreshold ? LargeItemOffset : ShortItemOffset;
+                    position++;
 
                     while (position < totalItemsLength)
                     {
-                        var itemLength = CalculateItemLength(Convert.ToInt16(data[position]), ShortItemOffset); // TODO: check item length +/- 55 bytes
+                        var itemLength = CalculateItemLength(Convert.ToInt16(input[position]), offset);
                         position++;
-                        decoded.Add(Encoding.ASCII.GetString(data, position, itemLength));
+                        decoded.Add(Encoding.ASCII.GetString(input, position, itemLength));
                         position += itemLength;
                     }
+
+                    continue;
                 }
 
                 // collection over 55 bytes
-                if (lengthByte > LargeCollectionOffset)
+                if (firstByte <= MaxItemLength)
                 {
-                    var itemCount = 0;
-                    var totalItems = CalculateItemLength(lengthByte, LargeCollectionOffset);
-                    var totalItemsLength = Convert.ToInt16(data[position]);
                     position++;
+                    var itemCount = 0;
+                    var totalItems = CalculateItemLength(firstByte, LargeCollectionOffset);
+                    var totalItemsLength = Convert.ToInt16(input[position]);
 
                     while (itemCount < totalItems)
                     {
-                        while (position < totalItemsLength)
-                        {
-                            var itemLength = CalculateItemLength(Convert.ToInt16(data[position]), ShortItemOffset);  // TODO: check item length +/- 55 bytes
-                            position++;
-                            decoded.Add(Encoding.ASCII.GetString(data, position, itemLength));
-                            position += itemLength;
-                        }
+                        position++;
+
+                        Decode(input, position, totalItemsLength, decoded);
 
                         itemCount++;
+                        position += totalItemsLength;
                     }
+                }
+                else
+                {
+                    throw new ArgumentOutOfRangeException("input", "input is too long");
                 }
             }
 
@@ -205,8 +201,9 @@ namespace NEthereum.Utilities
                 return Decode(data);
             }
 
-            var payloadLength = Convert.ToInt16(data.Skip(SyncTokenLength).SkipWhile(x => x == 0).FirstOrDefault());
-            //var decodedMessage = new List<string> {data[9].ToString()};
+            var payloadLength = Convert.ToInt16(data.Skip(SyncTokenLength)
+                                       .SkipWhile(x => x == 0)
+                                       .FirstOrDefault());
 
             return Decode(data, MessageStartIndex, payloadLength);
         }
@@ -214,7 +211,7 @@ namespace NEthereum.Utilities
         private static bool StartsWithSyncToken(byte[] data)
         {
             return data.Length >= 4 && 
-                   data[0] == syncToken[0] &&
+                   data[0] == syncToken[0] && 
                    data[1] == syncToken[1] &&
                    data[2] == syncToken[2] &&
                    data[3] == syncToken[3];
@@ -227,48 +224,5 @@ namespace NEthereum.Utilities
 
             return max - min;
         }
-
-        //private static IList<byte> EncodeLength(int itemLength)
-        //{
-        //    var lengths = new List<byte>();
-
-        //    // single byte
-        //    if (itemLength < ShortItemOffset)
-        //    {
-        //        lengths.Add(Convert.ToByte(itemLength));
-        //        return lengths;
-        //    }
-
-        //    // string under 55 bytes
-        //    if (itemLength > ShortItemOffset && itemLength <= LargeItemOffset)
-        //    {
-        //        lengths.Add(Convert.ToByte(ShortItemOffset + itemLength));
-        //        return lengths;
-        //    }
-
-        //    // string over 55 bytes
-        //    if (itemLength > LargeItemOffset && itemLength <= ShortCollectionOffset)
-        //    {
-        //        lengths.Add(Convert.ToByte(LargeItemOffset + 1)); // TODO: 183 + length of length of bytes
-        //        lengths.Add(Convert.ToByte(itemLength));
-        //        return lengths;
-        //    }
-
-        //    // collection under 55 bytes
-        //    if (itemLength > ShortCollectionOffset && itemLength <= LargeCollectionOffset)
-        //    {
-        //        lengths.Add(Convert.ToByte(ShortCollectionOffset + itemLength));
-        //    }
-
-        //    // collection over 55 bytes
-        //    if (itemLength > LargeCollectionOffset && itemLength <= MaxItemLength)
-        //    {
-        //        lengths.Add(Convert.ToByte(ShortCollectionOffset + itemLength)); // TODO: 247 + length of length of bytes
-        //        lengths.Add(Convert.ToByte(itemLength));
-        //        return lengths;
-        //    }
-
-        //    throw new ArgumentOutOfRangeException("itemLength", "length is too long");
-        //}
     }
 }

@@ -151,6 +151,8 @@ namespace NEthereum.Tests.Core
         {
             var bytes = RLP.Encode(new List<string>
                 {
+                    "cat",
+                    "dog",
                     "this is a collection",
                     "that when encoded",
                     "will be greater than 55 bytes",
@@ -158,10 +160,12 @@ namespace NEthereum.Tests.Core
 
             var result = RLP.Decode(bytes).ToList();
 
-            result.Should().HaveCount(3);
-            result[0].Should().Be("this is a collection");
-            result[1].Should().Be("that when encoded");
-            result[2].Should().Be("will be greater than 55 bytes");
+            result.Should().HaveCount(5);
+            result[0].Should().Be("cat");
+            result[1].Should().Be("dog");
+            result[2].Should().Be("this is a collection");
+            result[3].Should().Be("that when encoded");
+            result[4].Should().Be("will be greater than 55 bytes");
         }
     }
 }

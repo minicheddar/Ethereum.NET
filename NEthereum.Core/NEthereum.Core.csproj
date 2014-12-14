@@ -65,6 +65,7 @@
     <Compile Include="Utilities\EndianBitConverter.cs" />
     <Compile Include="Utilities\Endianness.cs" />
     <Compile Include="Utilities\LittleEndianBitConverter.cs" />
+    <Compile Include="Utilities\StringExtensions.cs" />
   </ItemGroup>
   <ItemGroup />
   <ItemGroup>

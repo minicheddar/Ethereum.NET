@@ -98,7 +98,7 @@ namespace NEthereum.Network
 
         private string DecodeMessage()
         {
-            var decoded = RLP.Decode(this.encodedMessage);
+            var decoded = RLP.DecodePacket(this.encodedMessage);
 
             return decoded.ToString();
         }
