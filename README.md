@@ -1,4 +1,4 @@
-#NEthereum
+#Ethereum.NET
 
 A .NET implementation of the [Ethereum](https://www.ethereum.org/) protocol.
 <br /><br />
@@ -15,4 +15,4 @@ Whilst the internet is an excellent medium for facilitating communication and co
 Enter Ethereum - a platform for building decentralised applications. It avoids centralised authorities by relying on peer consensus.
 
 ##How?
-It's a [turing complete](http://en.wikipedia.org/wiki/Turing_completeness) language built on top of a generic [blockchain](https://en.bitcoin.it/wiki/Block_chain). The original whitepaper by Vitalik Buterin can be found [here](https://github.com/ethereum/wiki/wiki/White-Paper). For a more academic overview, please see the yellowpaper by Dr Gavin Wood [here](http://gavwood.com/Paper.pdf).
+It's a [turing complete](http://en.wikipedia.org/wiki/Turing_completeness) language built on top of a generic [blockchain](https://en.bitcoin.it/wiki/Block_chain). The original whitepaper by Vitalik Buterin can be found [here](https://github.com/ethereum/wiki/wiki/White-Paper). For the academically inclined, please see the yellowpaper by Dr Gavin Wood [here](http://gavwood.com/Paper.pdf).
