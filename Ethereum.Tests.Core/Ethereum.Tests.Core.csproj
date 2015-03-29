@@ -35,6 +35,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Ethereum.Encoding">
+      <HintPath>..\packages\RLP.0.2.3\lib\Ethereum.Encoding.dll</HintPath>
+    </Reference>
     <Reference Include="FluentAssertions">
       <HintPath>..\packages\FluentAssertions.3.2.1\lib\net45\FluentAssertions.dll</HintPath>
     </Reference>
@@ -60,7 +63,6 @@
   </Choose>
   <ItemGroup>
     <Compile Include="Network\P2P\P2PHelloMessageTests.cs" />
-    <Compile Include="Utilities\RLPTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
