@@ -4,10 +4,10 @@ namespace Ethereum.Network
 {
     public static class ShhMessageCode
     {
-        public static string Status = "0x00";
-        public static string Message = "0x01";
+        public static int Status = 0x00;
+        public static int Message = 0x01;
 
-        public static IEnumerable<string> Values
+        public static IEnumerable<int> Values
         {
             get
             {

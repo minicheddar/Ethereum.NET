@@ -4,14 +4,14 @@ namespace Ethereum.Network
 {
     public static class P2PVersionCode
     {
-        public static string PoC1 = "0x00";
-        public static string PoC2 = "0x01";
-        public static string PoC3 = "0x07";
-        public static string PoC4 = "0x09";
-        public static string PoC5 = "0x17";
-        public static string PoC6 = "0x1c";
+        public static int PoC1 = 0x00;
+        public static int PoC2 = 0x01;
+        public static int PoC3 = 0x07;
+        public static int PoC4 = 0x09;
+        public static int PoC5 = 0x17;
+        public static int PoC6 = 0x1c;
 
-        public static IEnumerable<string> Values
+        public static IEnumerable<int> Values
         {
             get
             {

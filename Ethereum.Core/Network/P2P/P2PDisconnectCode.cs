@@ -4,21 +4,21 @@ namespace Ethereum.Network
 {
     public static class P2PDisconnectCode
     {
-        public static string Requested = "0x00";
-        public static string TCPError = "0x01";
-        public static string BadProtocol = "0x02";
-        public static string UselessPeer = "0x03";
-        public static string TooManyPeers = "0x04";
-        public static string AlreadyConnected = "0x05";
-        public static string IncompatibleVersion = "0x06";
-        public static string NullPeerIdentity = "0x07";
-        public static string PeerQuit = "0x08";
-        public static string UnexpectedIdentity = "0x09";
-        public static string ConnectedToSelf = "0x0a";
-        public static string Timeout = "0x0b";
-        public static string Other = "0x10";
+        public static int Requested = 0x00;
+        public static int TCPError = 0x01;
+        public static int BadProtocol = 0x02;
+        public static int UselessPeer = 0x03;
+        public static int TooManyPeers = 0x04;
+        public static int AlreadyConnected = 0x05;
+        public static int IncompatibleVersion = 0x06;
+        public static int NullPeerIdentity = 0x07;
+        public static int PeerQuit = 0x08;
+        public static int UnexpectedIdentity = 0x09;
+        public static int ConnectedToSelf = 0x0a;
+        public static int Timeout = 0x0b;
+        public static int Other = 0x10;
 
-        public static IEnumerable<string> Values
+        public static IEnumerable<int> Values
         {
             get
             {
