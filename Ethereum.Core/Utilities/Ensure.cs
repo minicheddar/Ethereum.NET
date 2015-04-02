@@ -20,6 +20,7 @@ namespace System
             That<Exception>(condition, message);
         }
 
+        // TODO: Convert Activator to compiled lambda..
         /// <summary>
         /// Ensures that the given expression is true
         /// </summary>
