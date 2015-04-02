@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Ethereum.Network
+namespace Ethereum.Network.Messaging
 {
     public static class P2PVersionCode
     {

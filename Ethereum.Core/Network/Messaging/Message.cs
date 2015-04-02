@@ -1,11 +1,11 @@
 ﻿using System;
 
-namespace Ethereum.Network
+namespace Ethereum.Network.Messaging
 {
     /// <summary>
     /// Base class for all message types
     /// </summary>
-    public abstract class Message
+    public abstract class Message : IMessage
     {
         private readonly Guid id;
 

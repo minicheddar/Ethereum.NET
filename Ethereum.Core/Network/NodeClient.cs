@@ -12,7 +12,7 @@ namespace Ethereum.Network
         private readonly SocketPermission permission;
         private readonly IPEndPoint endPoint;
         private readonly Socket sender;
-        private readonly BlockingCollection<string> incomingMessages;
+        private readonly BlockingCollection<byte[]> incomingMessages;
 
         public NodeClient()
         {
@@ -24,7 +24,7 @@ namespace Ethereum.Network
             this.endPoint = new IPEndPoint(ipAddress, Config.DefaultPort);
             this.sender = new Socket(ipAddress.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
 
-            this.incomingMessages = new BlockingCollection<string>();
+            this.incomingMessages = new BlockingCollection<byte[]>();
 
             Task.Factory.StartNew(() =>
             {
@@ -57,7 +57,7 @@ namespace Ethereum.Network
             }
         }
 
-        private void ProcessMessage(string incomingMsg)
+        private void ProcessMessage(byte[] incomingMsg)
         {
             // do work   
         }

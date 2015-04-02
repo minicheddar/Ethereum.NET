@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Ethereum.Encoding;
 using Ethereum.Utilities;
 
-namespace Ethereum.Network
+namespace Ethereum.Network.Messaging
 {
     public sealed class P2PHelloMessage : Message
     {
@@ -91,16 +92,18 @@ namespace Ethereum.Network
                     peer
                 }.SelectMany(x => x).ToArray();
 
-            this.encodedMessage = RLP.EncodePacket(message);
+            //this.encodedMessage = RLP.EncodePacket(message);
 
             return this.encodedMessage;
         }
 
         private string DecodeMessage()
         {
-            var decoded = RLP.DecodePacket(this.encodedMessage);
+            //var decoded = RLP.DecodePacket(this.encodedMessage);
 
-            return decoded.ToString();
+            //return decoded.ToString();
+
+            return string.Empty;
         }
 
         public override string ToString()

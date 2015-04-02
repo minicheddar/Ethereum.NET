@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Ethereum.Network
+namespace Ethereum.Network.Messaging
 {
     public sealed class MessageFactory
     {
