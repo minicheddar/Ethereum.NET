@@ -1,14 +1,20 @@
 ﻿using System;
+using Ethereum.Encoding;
+using Ethereum.Network;
 using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Ethereum.Network;
-using Ethereum.Utilities;
 
 namespace Ethereum.Tests.Network
 {
     [TestClass]
-    public class P2PHelloMessageTests
+    public class P2PHelloMessageTests : TestSetup
     {
+        [TestInitialize]
+        public void Setup()
+        {
+            this.Initialise();
+        }
+
         [TestMethod, Ignore]
         public void GetEncoded_ReturnsCorrectMessageCodeByte()
         {
@@ -29,7 +35,7 @@ namespace Ethereum.Tests.Network
             var hello2 = @"2240089100000050f84e11f84bc53681cc0a2982765fb840d8d60c2580fa795cfc0313efdeba869d2194e79e7cb2b522f782ffa0392cbbab8d1bac301208b137e0de4998334f3bcf73fa117ef213f87417089feaf84c21b0";
             var bytes = hello2.RemoveWhitespace().HexToBytes();
 
-            var result = RLP.DecodePacket(bytes);
+            //var result = RLP.DecodePacket(bytes);
         }
     }
 }

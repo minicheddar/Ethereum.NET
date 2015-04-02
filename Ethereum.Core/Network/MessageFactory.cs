@@ -15,7 +15,7 @@ namespace Ethereum.Network
         /// </summary>
         public P2PHelloMessage CreateHelloMessage()
         {
-            return new P2PHelloMessage(1, "Ethereum", capabilities, Config.DefaultPort, "12345");
+            return new P2PHelloMessage(1, "Ethereum.NET", capabilities, Config.DefaultPort, "12345");
         }
     }
 }

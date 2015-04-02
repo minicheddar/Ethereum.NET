@@ -47,6 +47,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Config.cs" />
+    <Compile Include="Network\IPeerDataStore.cs" />
     <Compile Include="Network\Message.cs" />
     <Compile Include="Network\NodeClient.cs" />
     <Compile Include="Network\NodeServer.cs" />
@@ -56,6 +57,8 @@
     <Compile Include="Network\P2P\P2PDisconnectCode.cs" />
     <Compile Include="Network\P2P\P2PHelloMessage.cs" />
     <Compile Include="Network\P2P\P2PVersionCode.cs" />
+    <Compile Include="Network\Peer.cs" />
+    <Compile Include="Network\PeerDataStore.cs" />
     <Compile Include="Network\Shh\ShhMessageCode.cs" />
     <Compile Include="Utilities\Ensure.cs" />
     <Compile Include="Utilities\IEnumerableExtensions.cs" />
