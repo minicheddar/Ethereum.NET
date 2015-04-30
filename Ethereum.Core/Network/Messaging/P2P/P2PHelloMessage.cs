@@ -1,114 +1,106 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using Ethereum.Encoding;
-using Ethereum.Utilities;
 
 namespace Ethereum.Network.Messaging
 {
     public sealed class P2PHelloMessage : Message
     {
-        private readonly int p2pVersion;
-        private readonly string clientId;
-        private readonly IEnumerable<Capability> capabilities;
-        private readonly int defaultPort;
-        private readonly string peerId;
-
+        private int p2pVersion;
+        private string clientId;
+        private IList<Capability> supportedCapabilities;
+        private int defaultPort;
+        private string peerId;
         private byte[] encodedMessage = new byte[0];
-        private string decodedMessage = string.Empty;
-
-        public P2PHelloMessage(
-            int p2pVersion, 
-            string clientId,
-            IEnumerable<Capability> capabilities,
-            int defaultPort,
-            string peerId)
-        {
-            Ensure.Argument.IsNotNull(p2pVersion, "p2pVersion");
-            Ensure.Argument.IsNotNullOrEmpty(clientId, "clientId");
-            Ensure.Argument.IsNotNullOrEmpty(capabilities, "capabilities");
-            Ensure.Argument.IsNotNull(defaultPort, "port");
-            Ensure.Argument.IsNotNullOrEmpty(peerId, "peerId");
-
-            this.p2pVersion = p2pVersion;
-            this.clientId = clientId;
-            this.capabilities = capabilities;
-            this.defaultPort = defaultPort;
-            this.peerId = peerId;
-        }
 
         public P2PHelloMessage(byte[] message)
         {
             Ensure.Argument.IsNotNullOrEmpty(message, "message");
 
             this.encodedMessage = message;
+
+            this.DecodeMessage();
         }
 
-        public int MessageCode { get { return P2PMessageCode.Hello; }}
-
-        public byte[] Encoded
+        public P2PHelloMessage(
+            int p2pVersion, 
+            string clientId,
+            IList<Capability> supportedCapabilities,
+            int defaultPort,
+            string peerId)
         {
-            get 
-            {
-                return encodedMessage.Length == 0 
-                        ? this.EncodeMessage() 
-                        : this.encodedMessage;
-            }
+            Ensure.Argument.IsNotNull(p2pVersion, "p2pVersion");
+            Ensure.Argument.IsNotNullOrEmpty(clientId, "clientId");
+            Ensure.Argument.IsNotNullOrEmpty(supportedCapabilities, "supportedCapabilities");
+            Ensure.Argument.IsNotNull(defaultPort, "port");
+            Ensure.Argument.IsNotNullOrEmpty(peerId, "peerId");
+
+            this.p2pVersion = p2pVersion;
+            this.clientId = clientId;
+            this.supportedCapabilities = supportedCapabilities;
+            this.defaultPort = defaultPort;
+            this.peerId = peerId;
         }
 
-        public string Decoded
+        public override P2PMessageCode MessageCode { get { return P2PMessageCode.Hello; } }
+
+        public override byte[] Encoded
         {
             get
             {
-                return decodedMessage.Length == 0
-                        ? this.DecodeMessage()
-                        : this.decodedMessage;
+                if (this.encodedMessage.Length == 0)
+                {
+                    this.EncodeMessage();
+                }
+
+                return this.encodedMessage;
             }
         }
 
-        private byte[] EncodeMessage()
+        private void EncodeMessage()
         {
-            var caps = new List<byte[]>();
-
-            foreach (var capability in capabilities)
-            {
-                caps.Add(RLP.Encode(capability.Name));
-                caps.Add(RLP.Encode(capability.Version));
-            }
-
-            var code = RLP.Encode(P2PMessageCode.Hello);
-            var ver = RLP.Encode(this.p2pVersion);
+            var code = RLP.Encode((int)this.MessageCode);
+            var version = RLP.Encode(this.p2pVersion);
             var client = RLP.Encode(this.clientId);
+
+            var capabilities = new List<dynamic>(this.supportedCapabilities.Count);
+            capabilities.AddRange(this.supportedCapabilities.Select(capability => new List<string>
+                {
+                    capability.Name, 
+                    capability.Version.ToString(CultureInfo.InvariantCulture)
+                }));
+
+            //var capabilities = new byte[this.supportedCapabilities.Count][];
+            //for (var i = 0; i < this.supportedCapabilities.Count(); i++)
+            //{
+            //    var capability = this.supportedCapabilities[i];
+            //    capabilities[i] = RLP.Encode(new List<dynamic>
+            //        {
+            //            capability.Name, 
+            //            capability.Version.ToString(CultureInfo.InvariantCulture)
+            //        });
+            //}
+
+            var caps = RLP.Encode(capabilities);
             var port = RLP.Encode(this.defaultPort);
             var peer = RLP.Encode(this.peerId);
 
-            var message = new List<byte[]>
+            this.encodedMessage = new List<byte[]>
                 {
                     code,
-                    ver,
+                    version,
                     client,
-                    caps.SelectMany(x => x).ToArray(),
+                    caps,
                     port,
                     peer
                 }.SelectMany(x => x).ToArray();
-
-            //this.encodedMessage = RLP.EncodePacket(message);
-
-            return this.encodedMessage;
         }
 
-        private string DecodeMessage()
+        private void DecodeMessage()
         {
-            //var decoded = RLP.DecodePacket(this.encodedMessage);
-
-            //return decoded.ToString();
-
-            return string.Empty;
-        }
-
-        public override string ToString()
-        {
-            return this.Decoded;
+            var decoded = RLP.Decode(this.encodedMessage);
         }
     }
 }

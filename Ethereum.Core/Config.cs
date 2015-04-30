@@ -13,5 +13,6 @@ namespace Ethereum
         public static int DefaultPort = 30303;
         public static bool PeerDiscoveryEnabled = true;
         public static bool TeardownDbOnLoad = true;
+        public static byte[] SyncToken = new byte[] { 34, 64, 8, 145 };
     }
 }

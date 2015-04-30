@@ -76,12 +76,14 @@
     <Compile Include="Events\SubscriptionService.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Network\INodeClient.cs" />
+    <Compile Include="Network\INodeServer.cs" />
     <Compile Include="Network\IPeerDataStore.cs" />
-    <Compile Include="Network\Messaging\MessageDecoder.cs" />
+    <Compile Include="Network\Messaging\IMessageEncoding.cs" />
+    <Compile Include="Network\Messaging\IMessageFactory.cs" />
+    <Compile Include="Network\Messaging\MessageEncoding.cs" />
     <Compile Include="Network\Messaging\IMessage.cs" />
-    <Compile Include="Network\Messaging\IMessageEncoder.cs" />
     <Compile Include="Network\Messaging\Message.cs" />
-    <Compile Include="Network\Messaging\MessageEncoder.cs" />
     <Compile Include="Network\NodeClient.cs" />
     <Compile Include="Network\NodeServer.cs" />
     <Compile Include="Network\Capability.cs" />

@@ -69,7 +69,8 @@
   </Choose>
   <ItemGroup>
     <Compile Include="IoC\CoreRegistry.cs" />
-    <Compile Include="Network\P2P\P2PHelloMessageTests.cs" />
+    <Compile Include="Network\Messaging\P2PHelloMessageTests.cs" />
+    <Compile Include="Network\NodeTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TestSetup.cs" />
   </ItemGroup>

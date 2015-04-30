@@ -1,6 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+using Ethereum.Core;
 using StructureMap;
 using StructureMap.Graph;
 
@@ -19,7 +18,7 @@ namespace Ethereum.Tests
                             a.FullName.StartsWith("Ethereum.", StringComparison.OrdinalIgnoreCase));
 
                         y.LookForRegistries();
-                        //y.AddAllTypesOf(typeof(IHandler<>));
+                        y.AddAllTypesOf(typeof(IEventHandler<>));
                         y.WithDefaultConventions();
                     }));
         }

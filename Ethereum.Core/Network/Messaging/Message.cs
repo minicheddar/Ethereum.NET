@@ -18,5 +18,9 @@ namespace Ethereum.Network.Messaging
         {
             get { return this.id; }
         }
+
+        public abstract P2PMessageCode MessageCode { get; }
+
+        public abstract byte[] Encoded { get; }
     }
 }

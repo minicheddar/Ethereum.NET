@@ -1,6 +1,5 @@
 ﻿using System;
-using Ethereum.Encoding;
-using Ethereum.Network;
+using Ethereum.Network.Messaging;
 using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
