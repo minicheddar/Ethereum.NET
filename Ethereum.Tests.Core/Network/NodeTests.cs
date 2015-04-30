@@ -15,10 +15,10 @@ namespace Ethereum.Tests.Network
         public void TestMethod1()
         {
             Debug.Flush();
-            var server = new NodeServer(new MessageDecoder());
-            var client = new NodeClient(new MessageEncoder());
+            var server = new NodeServer(new MessageEncoding(new MessageFactory()));
+            var client = new NodeClient(new MessageEncoding(new MessageFactory()));
 
-            server.Go();
+            server.Start();
             client.SendMessage();
 
             Thread.Sleep(1000);

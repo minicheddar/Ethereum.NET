@@ -12,6 +12,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{FB86A2
 		.nuget\packages.config = .nuget\packages.config
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ethereum.Encoding", "C:\Users\Ciaran\RLP\Ethereum.Encoding.csproj", "{53FC59AF-FEAA-486F-8694-88C2B614291C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -26,6 +28,10 @@ Global
 		{B670BBC6-EEE4-48A3-A5DF-E5D608E19AB0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B670BBC6-EEE4-48A3-A5DF-E5D608E19AB0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B670BBC6-EEE4-48A3-A5DF-E5D608E19AB0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{53FC59AF-FEAA-486F-8694-88C2B614291C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{53FC59AF-FEAA-486F-8694-88C2B614291C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{53FC59AF-FEAA-486F-8694-88C2B614291C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{53FC59AF-FEAA-486F-8694-88C2B614291C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

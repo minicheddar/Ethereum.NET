@@ -33,9 +33,6 @@
     <Reference Include="BouncyCastle.Crypto">
       <HintPath>..\packages\BouncyCastle.1.7.0\lib\Net40-Client\BouncyCastle.Crypto.dll</HintPath>
     </Reference>
-    <Reference Include="Ethereum.Encoding">
-      <HintPath>..\packages\RLP.0.2.3\lib\Ethereum.Encoding.dll</HintPath>
-    </Reference>
     <Reference Include="StructureMap, Version=3.1.4.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\structuremap.3.1.4.143\lib\net40\StructureMap.dll</HintPath>
@@ -107,9 +104,14 @@
     <Compile Include="Utilities\LittleEndianBitConverter.cs" />
     <Compile Include="Utilities\StringExtensions.cs" />
   </ItemGroup>
-  <ItemGroup />
   <ItemGroup>
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="C:\Users\Ciaran\RLP\Ethereum.Encoding.csproj">
+      <Project>{53fc59af-feaa-486f-8694-88c2b614291c}</Project>
+      <Name>Ethereum.Encoding</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

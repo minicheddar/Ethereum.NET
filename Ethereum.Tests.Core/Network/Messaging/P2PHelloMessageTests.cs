@@ -17,7 +17,7 @@ namespace Ethereum.Tests.Network
         [TestMethod, Ignore]
         public void GetEncoded_ReturnsCorrectMessageCodeByte()
         {
-            var message = new MessageFactory().CreateHelloMessage();
+            var message = new MessageFactory().Create(P2PMessageCode.Hello);
 
             var encoded = message.Encoded;
 

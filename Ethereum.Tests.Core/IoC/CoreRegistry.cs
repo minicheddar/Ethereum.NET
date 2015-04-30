@@ -15,8 +15,7 @@ namespace Ethereum.Tests.IoC
 
             For<IEventPublisher>().Use<EventPublisher>();
             For<ISubscriptionService>().Use<SubscriptionService>();
-            For<IMessageEncoder>().Use<MessageEncoder>();
-            For<IMessageDecoder>().Use<MessageDecoder>();
+            For<IMessageEncoding>().Use<MessageEncoding>();
         }
     }
 }
