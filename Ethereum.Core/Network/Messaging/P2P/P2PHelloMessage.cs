@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using Ethereum.Encoding;
+using Ethereum.Utilities;
 
 namespace Ethereum.Network.Messaging
 {
@@ -61,9 +62,9 @@ namespace Ethereum.Network.Messaging
 
         private void EncodeMessage()
         {
-            //var code = RLP.Encode((int)this.MessageCode);
-            //var version = RLP.Encode(this.p2pVersion);
-            //var client = RLP.Encode(this.clientId);
+            var code = RLP.Encode(((int)this.MessageCode).ToBytes());
+            var version = RLP.Encode(this.p2pVersion.ToBytes());
+            var client = RLP.Encode(this.clientId.ToBytes());
 
             //var capabilities = new List<dynamic>(this.supportedCapabilities.Count);
             //capabilities.AddRange(this.supportedCapabilities.Select(capability => new List<string>
@@ -72,30 +73,30 @@ namespace Ethereum.Network.Messaging
             //        capability.Version.ToString(CultureInfo.InvariantCulture)
             //    }));
 
-            ////var capabilities = new byte[this.supportedCapabilities.Count][];
-            ////for (var i = 0; i < this.supportedCapabilities.Count(); i++)
-            ////{
-            ////    var capability = this.supportedCapabilities[i];
-            ////    capabilities[i] = RLP.Encode(new List<dynamic>
-            ////        {
-            ////            capability.Name, 
-            ////            capability.Version.ToString(CultureInfo.InvariantCulture)
-            ////        });
-            ////}
+            //var capabilities = new byte[this.supportedCapabilities.Count][];
+            //for (var i = 0; i < this.supportedCapabilities.Count(); i++)
+            //{
+            //    var capability = this.supportedCapabilities[i];
+            //    capabilities[i] = RLP.Encode(new List<dynamic>
+            //        {
+            //            capability.Name, 
+            //            capability.Version.ToString(CultureInfo.InvariantCulture)
+            //        });
+            //}
 
             //var caps = RLP.Encode(capabilities);
-            //var port = RLP.Encode(this.defaultPort);
-            //var peer = RLP.Encode(this.peerId);
+            var port = RLP.Encode(this.defaultPort.ToBytes());
+            var peer = RLP.Encode(this.peerId.ToBytes());
 
-            //this.encodedMessage = new List<byte[]>
-            //    {
-            //        code,
-            //        version,
-            //        client,
-            //        caps,
-            //        port,
-            //        peer
-            //    }.SelectMany(x => x).ToArray();
+            this.encodedMessage = new List<byte[]>
+                {
+                    code,
+                    version,
+                    client,
+                    //caps,
+                    port,
+                    peer
+                }.SelectMany(x => x).ToArray();
         }
 
         private void DecodeMessage()

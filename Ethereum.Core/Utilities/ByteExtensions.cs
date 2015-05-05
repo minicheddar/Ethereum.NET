@@ -1,4 +1,6 @@
-﻿namespace System
+﻿using Ethereum.Utilities;
+
+namespace System
 {
     /// <summary>
     /// Extensions for <see cref="System.Byte"/>
@@ -17,6 +19,24 @@
             Array.Copy(source, i, target, 0, count);
 
             return target;
+        }
+        
+        /// <summary>
+        /// Converts int to big endian bytes
+        /// </summary>
+        public static byte[] ToBytes(this int source, bool trim = true)
+        {
+            var bytes = EndianBitConverter.Big.GetBytes(source);
+
+            return trim ? bytes.TrimStart() : bytes;
+        }
+        
+        /// <summary>
+        /// Converts string to ASCII bytes
+        /// </summary>
+        public static byte[] ToBytes(this string source)
+        {
+            return Text.Encoding.ASCII.GetBytes(source);
         }
     }
 }
