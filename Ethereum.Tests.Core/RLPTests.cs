@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Ethereum.Encoding
@@ -7,32 +8,32 @@ namespace Ethereum.Encoding
     public class RLPTests
     {
         /// <summary>
-        /// Given data to be encoded in RLP
-        /// When encoded data is single byte and less than or equal to 127
-        /// Then the original data is returned
+        /// Given data to be RLP encoded
+        /// When input is single byte less than or equal to 127
+        /// Then that byte is its own RLP encoding
         /// </summary>
         [TestMethod]
-        public void Encode_WhenSingleByteIsLessThanOrEqualTo127ReturnByte()
+        public void Encode_WhenInputIsSingleByteAndLessThanOrEqualTo127()
         {
-            var result = RLP.Encode(127);
+            var result = RLP.Encode(new byte[] {127});
 
-            Assert.IsTrue(result.GetType() == typeof(byte[]));
             Assert.IsTrue(result.Length == 1);
             Assert.IsTrue(result[0] == 127);
         }
 
         /// <summary>
-        /// Given data to be encoded in RLP
-        /// When encoded data is a 0-55 bytes
-        /// Then the first byte is 128 + length of the encoded string
-        /// Then followed by the string in bytes
+        /// Given data to be RLP encoded
+        /// When input length is 0-55 bytes
+        /// Then the first byte is 128 + length of the item
+        /// Then followed by the item
         /// </summary>
         [TestMethod]
-        public void Encode_WhenEncodedStringIs0To55BytesReturnCorrectBytes()
+        public void Encode_WhenInputLengthIs0To55Bytes()
         {
-            var result = RLP.Encode("dog");
+            var input = System.Text.Encoding.ASCII.GetBytes("dog");
 
-            Assert.IsTrue(result.GetType() == typeof(byte[]));
+            var result = RLP.Encode(input);
+
             Assert.IsTrue(result.Length == 4);
             Assert.IsTrue(result[0] == 131);
             Assert.IsTrue(result[1] == 100);
@@ -41,18 +42,19 @@ namespace Ethereum.Encoding
         }
 
         /// <summary>
-        /// Given data to be encoded in RLP
-        /// When encoded data is > 55 bytes
-        /// Then the first byte is 183 + length of the number of bytes
-        /// Then followed by the length of the encoded string
-        /// Then followed by the string in bytes
+        /// Given data to be RLP encoded
+        /// When input length 56-255 bytes
+        /// Then the first byte is 183 + length of the length of the item
+        /// Then followed by the length of the item
+        /// Then followed by the item
         /// </summary>
         [TestMethod]
-        public void Encode_WhenEncodedStringIsGreaterThan55BytesReturnCorrectBytes()
+        public void Encode_WhenInputLengthIs56To255Bytes()
         {
-            var result = RLP.Encode("This is a sentence. A sentence that is longer than 55 bytes.");
+            var input = System.Text.Encoding.ASCII.GetBytes("This is a sentence. A sentence that is longer than 55 bytes.");
 
-            Assert.IsTrue(result.GetType() == typeof(byte[]));
+            var result = RLP.Encode(input);
+
             Assert.IsTrue(result.Length == 62);
             Assert.IsTrue(result[0] == 184);
             Assert.IsTrue(result[1] == 60);
@@ -61,17 +63,22 @@ namespace Ethereum.Encoding
         }
 
         /// <summary>
-        /// Given data to be encoded in RLP
-        /// When total length of encoded collection is 0-55 bytes
-        /// Then the first byte is 192 + length of the encoded items
-        /// Then followed by the encoded items
+        /// Given data to be RLP encoded
+        /// When total length of all collection items is 0-55 bytes
+        /// Then the first byte is 192 + length of the items
+        /// Then followed by the items
         /// </summary>
         [TestMethod]
-        public void Encode_WhenEncodedCollectionIs0To55BytesReturnCorrectBytes()
+        public void Encode_WhenInputIsCollectionAndTotalLengthOfItemsIs0To55Bytes()
         {
-            var result = RLP.Encode(new List<string> { "cat", "dog" });
+            var input = new List<byte[]>
+                {
+                    System.Text.Encoding.ASCII.GetBytes("cat"),
+                    System.Text.Encoding.ASCII.GetBytes("dog")
+                };
 
-            Assert.IsTrue(result.GetType() == typeof(byte[]));
+            var result = RLP.Encode(input);
+
             Assert.IsTrue(result.Length == 9);
             Assert.IsTrue(result[0] == 200);
             Assert.IsTrue(result[1] == 131);
@@ -79,23 +86,24 @@ namespace Ethereum.Encoding
         }
 
         /// <summary>
-        /// Given data to be encoded in RLP
-        /// When total length of encoded collection is > 55 bytes
-        /// Then the first byte is 247 + length of the number of bytes
-        /// Then followed by the length of the encoded items
-        /// Then followed by the encoded items
+        /// Given data to be RLP encoded
+        /// When total length of all collection items is 56-255 bytes
+        /// Then the first byte is 247 + length of the length of the items
+        /// Then followed by the length of the items
+        /// Then followed by the items
         /// </summary>
         [TestMethod]
-        public void Encode_WhenEncodedCollectionIsGreaterThan55BytesReturnCorrectBytes()
+        public void Encode_WhenInputIsCollectionAndTotalLengthOfItemsIs56To255Bytes()
         {
-            var result = RLP.Encode(new List<string>
+            var input = new List<byte[]>
                 {
-                    "this is a collection",
-                    "that when encoded",
-                    "will be greater than 55 bytes",
-                });
+                    System.Text.Encoding.ASCII.GetBytes("this is a collection"),
+                    System.Text.Encoding.ASCII.GetBytes("that when encoded"),
+                    System.Text.Encoding.ASCII.GetBytes("will be greater than 55 bytes"),
+                };
 
-            Assert.IsTrue(result.GetType() == typeof(byte[]));
+            var result = RLP.Encode(input);
+
             Assert.IsTrue(result.Length == 71);
             Assert.IsTrue(result[0] == 248);
             Assert.IsTrue(result[1] == 69);
@@ -104,72 +112,83 @@ namespace Ethereum.Encoding
         }
 
         [TestMethod]
-        public void Decode_WhenDataIsSingleByteAndLessThanOrEqualTo127ReturnValue()
+        public void Decode_WhenEncodedIsSingleByteAndLessThanOrEqualTo127()
         {
-            var bytes = RLP.Encode(10);
+            var item = RLP.Encode(new byte[] {127});
 
-            var result = RLP.Decode(bytes);
+            var result = RLP.Decode(item);
 
             Assert.IsTrue(result.Count == 1);
-            Assert.IsTrue(result[0] == "10");
+            Assert.IsTrue(result[0].IsCollection == false);
+            Assert.IsTrue(result[0].String[0] == 127);
         }
 
         [TestMethod]
-        public void Decode_WhenEncodedDataIs0To55BytesReturnCorrectValue()
+        public void Decode_WhenEncodedLengthIs0To55Bytes()
         {
-            var bytes = RLP.Encode("cheese on toast");
+            var input = RLP.Encode(System.Text.Encoding.ASCII.GetBytes("cheese on toast"));
 
-            var result = RLP.Decode(bytes);
+            var result = RLP.Decode(input);
 
             Assert.IsTrue(result.Count == 1);
-            Assert.IsTrue(result[0] == "cheese on toast");
+            Assert.IsTrue(result[0].IsCollection == false);
+            Assert.AreEqual("cheese on toast", System.Text.Encoding.ASCII.GetString(result[0].String));
         }
 
         [TestMethod]
-        public void Decode_WhenEncodedDataIsGreaterThan55BytesReturnCorrectValue()
+        public void Decode_WhenEncodedLengthIs56To255Bytes()
         {
-            var bytes = RLP.Encode("This is a sentence. A sentence that is longer than 55 bytes.");
+            var input = RLP.Encode(System.Text.Encoding.ASCII.GetBytes("This is a sentence. A sentence that is longer than 55 bytes."));
 
-            var result = RLP.Decode(bytes);
+            var result = RLP.Decode(input);
 
             Assert.IsTrue(result.Count == 1);
-            Assert.IsTrue(result[0] == "This is a sentence. A sentence that is longer than 55 bytes.");
+            Assert.IsTrue(result[0].IsCollection == false);
+            Assert.AreEqual("This is a sentence. A sentence that is longer than 55 bytes.", System.Text.Encoding.ASCII.GetString(result[0].String));
         }
 
         [TestMethod]
-        public void Decode_WhenEncodedCollectionIs0To55BytesReturnCorrectValues()
+        public void Decode_WhenEncodedCollectionIs0To55Bytes()
         {
-            var bytes = RLP.Encode(new List<string> { "cat", "dog" });
-
-            var result = RLP.Decode(bytes);
-
-            Assert.IsTrue(result.Count == 2);
-            Assert.IsTrue(result[0] == "cat");
-            Assert.IsTrue(result[1] == "dog");
-        }
-
-        [TestMethod]
-        public void Decode_WhenDecodedCollectionIsGreaterThan55BytesReturnCorrectValues()
-        {
-            var bytes = RLP.Encode(new List<string>
+            var input = RLP.Encode(new List<byte[]>
                 {
-                    "cat",
-                    "dog",
-                    "this is a collection",
-                    "that when encoded",
-                    "will be greater than 55 bytes",
-                    "127"
+                    System.Text.Encoding.ASCII.GetBytes("cat"),
+                    System.Text.Encoding.ASCII.GetBytes("dog")
                 });
 
-            var result = RLP.Decode(bytes);
+            var result = RLP.Decode(input);
+
+            Assert.IsTrue(result.Count == 2);
+            Assert.IsTrue(result.All(x => x.IsCollection == false));
+            Assert.AreEqual("cat", System.Text.Encoding.ASCII.GetString(result[0].String));
+            Assert.AreEqual("dog", System.Text.Encoding.ASCII.GetString(result[1].String));
+        }
+
+        [TestMethod]
+        public void Decode_WhenEncodedCollectionIs56To255Bytes()
+        {
+            var input = RLP.Encode(new List<byte[]>
+                {
+                    System.Text.Encoding.ASCII.GetBytes("cat"),
+                    System.Text.Encoding.ASCII.GetBytes("dog"),
+                    System.Text.Encoding.ASCII.GetBytes("this is a collection"),
+                    System.Text.Encoding.ASCII.GetBytes("that when encoded"),
+                    System.Text.Encoding.ASCII.GetBytes("will be greater than 55 bytes"),
+                    new byte[] {127},
+                });
+
+            var result = RLP.Decode(input);
 
             Assert.IsTrue(result.Count == 6);
-            Assert.IsTrue(result[0] == "cat");
-            Assert.IsTrue(result[1] == "dog");
-            Assert.IsTrue(result[2] == "this is a collection");
-            Assert.IsTrue(result[3] == "that when encoded");
-            Assert.IsTrue(result[4] == "will be greater than 55 bytes");
-            Assert.IsTrue(result[5] == "127");
+
+            Assert.IsTrue(result.Count == 6);
+            Assert.IsTrue(result.All(x => x.IsCollection == false));
+            Assert.AreEqual("cat", System.Text.Encoding.ASCII.GetString(result[0].String));
+            Assert.AreEqual("dog", System.Text.Encoding.ASCII.GetString(result[1].String));
+            Assert.AreEqual("this is a collection", System.Text.Encoding.ASCII.GetString(result[2].String));
+            Assert.AreEqual("that when encoded", System.Text.Encoding.ASCII.GetString(result[3].String));
+            Assert.AreEqual("will be greater than 55 bytes", System.Text.Encoding.ASCII.GetString(result[4].String));
+            Assert.AreEqual(127, result[5].String[0]);
         }
     }
 }

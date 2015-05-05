@@ -40,8 +40,11 @@ namespace Ethereum.Network.Messaging
         }
 
         public IMessage Decode(byte[] message)
-        {
-            return this.messageFactory.Create(message);
+        { 
+            var payload = new byte[message.Length - 8];
+            Array.Copy(message, 8, payload, 0, payload.Length);
+
+            return this.messageFactory.Create(payload);
         }
 
         private static bool StartsWithSyncToken(byte[] data)

@@ -7,11 +7,11 @@ namespace Ethereum.Encoding
     {
         public RLPMessage(byte[] input)
         {
-            this.Decoded = new List<string>();
+            this.Data = new List<RLPItem>();
             this.Remainder = new ArraySegment<byte>(input);
         }
 
-        public List<string> Decoded { get; set; }
+        public List<RLPItem> Data { get; set; }
 
         public ArraySegment<byte> Remainder { get; set; }
     }
